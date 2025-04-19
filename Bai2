@@ -1,15 +1,15 @@
 .global _start
 _start:
     la t0, N             # t0: địa chỉ N trên thanh ram vô thanh ghi
-    la t1, M             # t1: địa chỉ M
+    la t1, M             # t1: địa chỉ M trên thanh ram vô thanh ghi
     la t2, r             # t2: địa chỉ kết quả r
     lw t3, 0(t0)         # t3 = gán giá trị N
     lw t4, 0(t1)         # t4 = giá giá trị M
     li t5, 0             # t5 = bộ đếm i = 0
-    li t6, 1             # t6 = kết quả khởi tạo = 1
+    li t6, 1             # t6 = kết quả khởi tạo = r = 1
 
 TinhLuyThua:
-    mul t6, t6, t3       # t6 *= N
+    mul t6, t6, t3       # t6 = t6 * N
     addi t5, t5, 1       # i++
     blt t5, t4, TinhLuyThua # nếu i < M thì tiếp tục lặp
 
@@ -18,8 +18,8 @@ LuuKetQua:
     j _start             # quay lại bắt đầu (lặp vô hạn)
 
 .data
-N: .word 2
-M: .word 4
+N: .word 5
+M: .word 6
 r: .word 0
 
 .end
