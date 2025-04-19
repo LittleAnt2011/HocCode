@@ -1,0 +1,30 @@
+.global _start
+_start:
+    # Kiểm tra xem N có phải số chính phương không
+    la t0, N              # t0 chứa địa chỉ của N
+    la t1, r              # t1 chứa địa chỉ của r
+    lw t2, 0(t0)          # t2 = N
+    li t3, 0              # t3 = i (biến đếm)
+    li t4, 0              # t4 = i*i
+
+CheckLoop:
+    addi t3, t3, 1        # i = i + 1
+    mul t4, t3, t3        # t4 = i * i
+    blt t4, t2, CheckLoop # nếu i*i < N thì lặp tiếp
+    beq t4, t2, IsSquare  # nếu i*i == N thì là chính phương
+
+NotSquare:
+    li t5, 0              # r = 0
+    sw t5, 0(t1)
+    j _start              # lặp lại chương trình
+
+IsSquare:
+    li t5, 1              # r = 1
+    sw t5, 0(t1)
+    j _start              # lặp lại chương trình
+
+.data
+N: .word 15
+r: .word 0
+
+.end
