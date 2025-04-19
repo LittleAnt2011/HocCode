@@ -1,10 +1,10 @@
 .global _start
 _start:
-    la t0, N             # t0: địa chỉ N
+    la t0, N             # t0: địa chỉ N trên thanh ram vô thanh ghi
     la t1, M             # t1: địa chỉ M
     la t2, r             # t2: địa chỉ kết quả r
-    lw t3, 0(t0)         # t3 = N
-    lw t4, 0(t1)         # t4 = M
+    lw t3, 0(t0)         # t3 = gán giá trị N
+    lw t4, 0(t1)         # t4 = giá giá trị M
     li t5, 0             # t5 = bộ đếm i = 0
     li t6, 1             # t6 = kết quả khởi tạo = 1
 
