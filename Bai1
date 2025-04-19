@@ -1,0 +1,20 @@
+.global _start
+_start:
+    la t0, N             # t0 chứa địa chỉ biến N
+    la t1, r             # t1 chứa địa chỉ biến r
+    lw t2, 0(t0)         # t2 = N
+    li t3, 0             # t3 = biến đếm i = 0
+    li t4, 1             # t4 = gt = 1
+
+Loop:
+    addi t3, t3, 1       # i = i + 1
+    mul t4, t4, t3       # gt = gt * i
+    blt t3, t2, Loop     # nếu i < N thì quay lại Loop
+
+LuuKetQua:
+    sw t4, 0(t1)         # lưu kết quả vào biến r
+    j _start             # chạy lại từ đầu
+
+.data
+N: .word 5
+r: .word 0
