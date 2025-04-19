@@ -18,3 +18,5 @@ LuuKetQua:
 .data
 N: .word 5
 r: .word 0
+
+.end
