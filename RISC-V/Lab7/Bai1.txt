@@ -1,0 +1,58 @@
+.data
+N:      .word 10                      # Số phần tử của mảng
+array:  .word 2, 4, 5, 6, 7, 9, 11, 13, 15, 17  # Mảng số nguyên
+
+.text
+.globl _start
+_start:
+    la t1, array        # t1 trỏ tới đầu mảng
+    li t0, 0            # t0 đếm số nguyên tố
+    li t2, 0            # chỉ số i
+    lw t3, N            # t3 = N
+
+loop:
+    beq t2, t3, end     # nếu i == N thì kết thúc
+
+    lw a0, 0(t1)        # a0 = array[i]
+    jal ra, is_prime    # gọi hàm kiểm tra số nguyên tố
+    beq a0, zero, skip  # nếu không phải số nguyên tố thì bỏ qua
+
+    addi t0, t0, 1      # t0++
+
+skip:
+    addi t2, t2, 1      # i++
+    addi t1, t1, 4      # dịch con trỏ sang phần tử tiếp theo
+    j loop
+
+end:
+    # t0 chứa kết quả (số lượng số nguyên tố)
+    # kết thúc chương trình
+    li a7, 10
+    ecall
+
+# Hàm is_prime:
+# Input: a0 = số cần kiểm tra
+# Output: a0 = 1 nếu là số nguyên tố, 0 nếu không
+
+is_prime:
+    li t4, 2
+    blt a0, t4, not_prime  # nếu n < 2 -> không phải số nguyên tố
+
+    mv t5, t4              # t5 = i = 2
+    sqrt_loop:
+        mul t6, t5, t5     # t6 = i * i
+        bgt t6, a0, prime  # nếu i*i > n thì là số nguyên tố
+
+        rem t6, a0, t5     # t6 = n % i
+        beq t6, zero, not_prime  # nếu chia hết thì không phải số nguyên tố
+
+        addi t5, t5, 1     # i++
+        j sqrt_loop
+
+prime:
+    li a0, 1
+    ret
+
+not_prime:
+    li a0, 0
+    ret
