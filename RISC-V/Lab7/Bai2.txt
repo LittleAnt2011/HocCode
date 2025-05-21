@@ -1,0 +1,47 @@
+.data
+N:        .word 8          # Giá trị đầu vào n = 8
+RESULT:   .word 0          # Kết quả sẽ được lưu ở đây
+
+.text
+.global _start
+_start:
+    # Đọc giá trị N từ bộ nhớ
+    la      t0, N          # t0 = &N
+    lw      a1, 0(t0)      # a1 = n
+
+    # Khởi tạo f0 = 0, f1 = 1
+    li      t1, 0          # t1 = f0
+    li      t2, 1          # t2 = f1
+
+    # Kiểm tra các trường hợp cơ sở
+    beq     a1, zero, save_f0       # nếu n == 0
+    li      t3, 1
+    beq     a1, t3, save_f1         # nếu n == 1
+
+    # Vòng lặp chính: for i = 2 to n
+    li      t3, 2          # t3 = i = 2
+loop:
+    add     t4, t1, t2     # t4 = f(i) = f(i-1) + f(i-2)
+    mv      t1, t2         # f(i-2) = f(i-1)
+    mv      t2, t4         # f(i-1) = f(i)
+    addi    t3, t3, 1      # i++
+    ble     t3, a1, loop   # while i <= n
+
+    # Lưu kết quả vào RESULT
+	#t2 ra ket qua HEX doi sang DEC la duoc
+    la      t5, RESULT     # t5 = &RESULT
+    sw      t2, 0(t5)      # RESULT = f(n)
+    j       done
+
+save_f0:
+    la      t5, RESULT
+    sw      t1, 0(t5)      # f(0) = 0
+    j       done
+
+save_f1:
+    la      t5, RESULT
+    sw      t2, 0(t5)      # f(1) = 1
+    j       done
+
+done:
+    j       done           # vòng lặp vô hạn

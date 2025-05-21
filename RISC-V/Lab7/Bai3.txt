@@ -1,0 +1,52 @@
+.data
+    RED_LEDs:    .word 0xFF200000
+    SWITCHES:    .word 0xFF200040
+
+.text
+.globl _start
+
+_start:
+    # Load address of SWITCHES and RED_LEDs
+    la t0, SWITCHES
+    lw t1, 0(t0)       # Load address of switches
+    lw t1, 0(t1)       # Load value from switches into t1 (N)
+
+    mv a0, t1          # Move N to a0 to pass as argument
+    jal ra, isPerfectSquare
+
+    # a0 = 1 nếu là số chính phương
+    la t2, RED_LEDs
+    lw t3, 0(t2)       # Load LED address
+
+    beq a0, x0, not_square
+    li t4, 0xFF        # RED LEDs ON (all 8 bits)
+    sw t4, 0(t3)
+    j end
+
+not_square:
+    li t4, 0x00        # RED LEDs OFF
+    sw t4, 0(t3)
+
+end:
+    j end              # Vòng lặp vô tận
+
+# ----------------------------------------------------------
+# Hàm kiểm tra số chính phương: isPerfectSquare(a0 = N)
+# Trả về a0 = 1 nếu là số chính phương, a0 = 0 nếu không
+# ----------------------------------------------------------
+isPerfectSquare:
+    li t1, 0           # i = 0
+.loop:
+    mul t2, t1, t1     # t2 = i * i
+    beq t2, a0, is_square
+    bgt t2, a0, not_square_return
+    addi t1, t1, 1     # i++
+    j .loop
+
+is_square:
+    li a0, 1           # return 1
+    jr ra
+
+not_square_return:
+    li a0, 0           # return 0
+    jr ra
