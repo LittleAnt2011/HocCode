@@ -52,8 +52,8 @@ is_prime:
 
 prime:
     li a0, 1
-    ret (ve lai jal)
+    ret #(ve lai jal)
 
 not_prime:
     li a0, 0
-    ret (ve lai jal)
+    ret #(ve lai jal)
