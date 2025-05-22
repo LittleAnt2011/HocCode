@@ -57,3 +57,97 @@ prime:
 not_prime:
     li a0, 0
     ret #(ve lai jal)
+
+
+------------------------------------------------------------------------------------------------------
+.data
+A: .word 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
+N: .word 10
+count: .word 0
+
+.text
+.global _start
+_start:
+    li sp, 0x03FFFFFC
+    
+    # Khởi tạo các biến
+    la s0, A        # s0 = địa chỉ mảng A
+    la s1, N
+    lw s1, 0(s1)    # s1 = N (kích thước mảng)
+    li s2, 0        # s2 = count (đếm số nguyên tố)
+    li s3, 0        # s3 = i (chỉ số hiện tại)
+
+LOOP:
+    # Kiểm tra điều kiện i < N
+    bge s3, s1, END_LOOP #> chay tiep / < xuong end
+    
+    # Tính địa chỉ A[i] = A + i*4
+    slli t0, s3, 2
+    add t0, s0, t0  # A[i] = A + i*4
+    lw a0, 0(t0)    # a0 = A[i]
+    
+    # Gọi hàm isPrime(A[i])
+    jal ra, isPrime
+    
+    # Nếu là số nguyên tố thì tăng count
+    beqz a0, SKIP
+    addi s2, s2, 1  # count++
+    
+SKIP:
+    addi s3, s3, 1  # i++
+    j LOOP
+
+END_LOOP:
+    # Lưu kết quả
+    la t0, count
+    sw s2, 0(t0)
+    
+STOP:
+    j STOP
+
+isPrime:
+    # Prologue
+    addi sp, sp, -12
+    sw ra, 8(sp)
+    sw s0, 4(sp)
+    sw s1, 0(sp)
+    
+    # Kiểm tra n < 2
+    li t0, 2
+    blt a0, t0, NOT_PRIME
+    
+    # Kiểm tra n == 2
+    beq a0, t0, IS_PRIME
+    
+    # Kiểm tra n % 2 == 0 (số chẵn)
+    andi t0, a0, 1
+    beqz t0, NOT_PRIME
+    
+    # Vòng lặp kiểm tra từ 3 đến sqrt(n)
+    mv s0, a0       # s0 = n
+    li s1, 3        # s1 = i = 3
+    
+CHECK_LOOP:
+    mul t0, s1, s1  # t0 = i * i
+    bgt t0, s0, IS_PRIME  # Nếu i*i > n thì là số nguyên tố
+    
+    rem t0, s0, s1  # t0 = n % i
+    beqz t0, NOT_PRIME    # Nếu chia hết thì không phải số nguyên tố
+    
+    addi s1, s1, 2  # i += 2 (chỉ kiểm tra số lẻ)
+    j CHECK_LOOP
+
+IS_PRIME:
+    li a0, 1
+    j isPrime_EPILOGUE
+
+NOT_PRIME:
+    li a0, 0
+
+isPrime_EPILOGUE:
+    lw s1, 0(sp)
+    lw s0, 4(sp)
+    lw ra, 8(sp)
+    addi sp, sp, 12
+    ret
+
