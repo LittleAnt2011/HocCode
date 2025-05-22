@@ -37,7 +37,7 @@ end:
 
 is_prime:
     li t4, 2		   # Số nguyên tố là những số tự nhiên lớn hơn 1, chỉ có hai ước số là 1 và chính nó
-    blt a0, t4, not_prime  # nếu n < 2 -> không phải số nguyên tố -> nhảy xuống not_prime ->
+    blt a0, t4, not_prime  # nếu n < 2 -> không phải số nguyên tố -> nhảy xuống not_prime (blt : nhay neu nho hon)
                            
     mv t5, t4              # t5 = i = 2
     sqrt_loop:
@@ -52,8 +52,8 @@ is_prime:
 
 prime:
     li a0, 1
-    ret
+    ret (ve lai jal)
 
 not_prime:
     li a0, 0
-    ret
+    ret (ve lai jal)
