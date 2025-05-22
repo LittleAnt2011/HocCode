@@ -33,20 +33,30 @@ end:
 # ----------------------------------------------------------
 # Hàm kiểm tra số chính phương: isPerfectSquare(a0 = N)
 # Trả về a0 = 1 nếu là số chính phương, a0 = 0 nếu không
+# Không dùng mul, div, rem
 # ----------------------------------------------------------
 isPerfectSquare:
-    li t1, 0           # i = 0
+    li t1, 0           # t1 = i = 0
+
 .loop:
-    mul t2, t1, t1     # t2 = i * i
-    beq t2, a0, is_square
-    bgt t2, a0, not_square_return
-    addi t1, t1, 1     # i++
+    li t2, 0           # t2 = i*i (reset)
+    li t3, 0           # t3 = đếm số lần cộng
+
+.square_loop:
+    add t2, t2, t1     # t2 += i
+    addi t3, t3, 1
+    bne t3, t1, .square_loop
+
+    beq t2, a0, is_square     # Nếu i*i == N → là số chính phương
+    bgt t2, a0, not_square_return  # Nếu i*i > N → không phải
+
+    addi t1, t1, 1
     j .loop
 
 is_square:
-    li a0, 1           # return 1
+    li a0, 1           # Trả về 1 nếu đúng
     jr ra
 
 not_square_return:
-    li a0, 0           # return 0
+    li a0, 0           # Trả về 0 nếu không
     jr ra
