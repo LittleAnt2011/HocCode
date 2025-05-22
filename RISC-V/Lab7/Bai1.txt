@@ -1,66 +1,4 @@
 .data
-N:      .word 10                      # Số phần tử của mảng
-array:  .word 2, 4, 5, 6, 7, 9, 11, 13, 15, 17  # Mảng số nguyên
-						# 1 cái .word = 4 byte nên addi t1, t1, 4 vd array[0] = 2 (0x10010000) -> array[1] = 4 (0x10010004)
-
-.text
-.globl _start
-_start:
-    la t1, array        # t1 trỏ tới đầu mảng
-    li t0, 0            # t0 đếm số nguyên tố
-    li t2, 0            # chỉ số i
-    lw t3, N            # t3 = N
-
-loop:
-    beq t2, t3, end     # nếu i == N thì kết thúc
-
-    lw a0, 0(t1)        # a0 = array[i]
-    jal ra, is_prime    # gọi hàm kiểm tra số nguyên tố -> trả ra a0 = 0 hoặc a0 = 1
-    beq a0, zero, skip  # nếu không phải số nguyên tố thì bỏ qua
-                        # a0 = 1 thì tang gia tri t0 / a0 = 0 thì đến skip
-    addi t0, t0, 1      # t0++
-
-skip:
-    addi t2, t2, 1      # i++
-    addi t1, t1, 4      # dịch con trỏ sang phần tử tiếp theo
-    j loop
-
-end:
-    # t0 chứa kết quả (số lượng số nguyên tố)
-    # kết thúc chương trình
-    li a7, 10
-    ecall
-
-# Hàm is_prime:
-# Input: a0 = số cần kiểm tra
-# Output: a0 = 1 nếu là số nguyên tố, 0 nếu không
-
-is_prime:
-    li t4, 2		   # Số nguyên tố là những số tự nhiên lớn hơn 1, chỉ có hai ước số là 1 và chính nó
-    blt a0, t4, not_prime  # nếu n < 2 -> không phải số nguyên tố -> nhảy xuống not_prime (blt : nhay neu nho hon)
-                           
-    mv t5, t4              # t5 = i = 2
-    sqrt_loop:
-        mul t6, t5, t5     # t6 = 2 * 2 = 4
-        bgt t6, a0, prime  # 4 > 4 ? → sai → tiếp tục
-
-        rem t6, a0, t5     # t6 = 4 % 2 = 0 (rem : lưu phần dư của phép chia vào thanh ghi t6)
-        beq t6, zero, not_prime  # 0 == 0 ? → nhảy đến not_prime 
-
-        addi t5, t5, 1     # i++ (vd a0 = 9 => 4 > 9 sai => 9%2 = 1 sai => addi i + 1 = 3 tiep tuc)
-        j sqrt_loop
-
-prime:
-    li a0, 1
-    ret #(ve lai jal)
-
-not_prime:
-    li a0, 0
-    ret #(ve lai jal)
-
-
-------------------------------------------------------------------------------------------------------
-.data
 A: .word 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
 N: .word 10
 count: .word 0
@@ -69,72 +7,82 @@ count: .word 0
 .global _start
 _start:
     li sp, 0x03FFFFFC
-    
+
     # Khởi tạo các biến
-    la s0, A        # s0 = địa chỉ mảng A
+    la s0, A         # s0 = địa chỉ mảng A
     la s1, N
-    lw s1, 0(s1)    # s1 = N (kích thước mảng)
-    li s2, 0        # s2 = count (đếm số nguyên tố)
-    li s3, 0        # s3 = i (chỉ số hiện tại)
+    lw s1, 0(s1)     # s1 = N (kích thước mảng)
+    li s2, 0         # s2 = count (đếm số nguyên tố)
+    li s3, 0         # s3 = i (chỉ số hiện tại)
 
 LOOP:
-    # Kiểm tra điều kiện i < N
-    bge s3, s1, END_LOOP #> chay tiep / < xuong end
-    
-    # Tính địa chỉ A[i] = A + i*4
-    slli t0, s3, 2
-    add t0, s0, t0  # A[i] = A + i*4
-    lw a0, 0(t0)    # a0 = A[i]
-    
-    # Gọi hàm isPrime(A[i])
+    bge s3, s1, END_LOOP
+
+    slli t0, s3, 2   # t0 = i * 4
+    add t0, s0, t0   # t0 = &A[i]
+    lw a0, 0(t0)     # a0 = A[i]
+
     jal ra, isPrime
-    
-    # Nếu là số nguyên tố thì tăng count
+
     beqz a0, SKIP
-    addi s2, s2, 1  # count++
-    
+    addi s2, s2, 1   # count++
+
 SKIP:
-    addi s3, s3, 1  # i++
+    addi s3, s3, 1
     j LOOP
 
 END_LOOP:
-    # Lưu kết quả
     la t0, count
     sw s2, 0(t0)
-    
+
 STOP:
     j STOP
 
+
+# ====================================
+# Hàm kiểm tra nguyên tố không dùng mul/div/rem
+# ====================================
 isPrime:
-    # Prologue
     addi sp, sp, -12
     sw ra, 8(sp)
     sw s0, 4(sp)
     sw s1, 0(sp)
-    
-    # Kiểm tra n < 2
+
+    # if a0 < 2 → not prime
     li t0, 2
     blt a0, t0, NOT_PRIME
-    
-    # Kiểm tra n == 2
+
+    # if a0 == 2 → prime
     beq a0, t0, IS_PRIME
-    
-    # Kiểm tra n % 2 == 0 (số chẵn)
+
+    # if a0 % 2 == 0 → not prime
     andi t0, a0, 1
     beqz t0, NOT_PRIME
-    
-    # Vòng lặp kiểm tra từ 3 đến sqrt(n)
+
     mv s0, a0       # s0 = n
     li s1, 3        # s1 = i = 3
-    
+
 CHECK_LOOP:
-    mul t0, s1, s1  # t0 = i * i
-    bgt t0, s0, IS_PRIME  # Nếu i*i > n thì là số nguyên tố
-    
-    rem t0, s0, s1  # t0 = n % i
-    beqz t0, NOT_PRIME    # Nếu chia hết thì không phải số nguyên tố
-    
-    addi s1, s1, 2  # i += 2 (chỉ kiểm tra số lẻ)
+    # t0 = i*i bằng cộng lặp
+    li t0, 0
+    li t3, 0
+ComputeSquare:
+    add t0, t0, s1
+    addi t3, t3, 1
+    bne t3, s1, ComputeSquare
+
+    bgt t0, s0, IS_PRIME
+
+    # Kiểm tra chia hết bằng phép trừ lặp
+    mv t4, s0       # t4 = n
+TrySubtract:
+    blt t4, s1, NotDivisible
+    beq t4, s1, NOT_PRIME
+    sub t4, t4, s1
+    j TrySubtract
+
+NotDivisible:
+    addi s1, s1, 2
     j CHECK_LOOP
 
 IS_PRIME:
@@ -150,4 +98,3 @@ isPrime_EPILOGUE:
     lw ra, 8(sp)
     addi sp, sp, 12
     ret
-
