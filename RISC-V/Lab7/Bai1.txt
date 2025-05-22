@@ -41,13 +41,13 @@ is_prime:
                            
     mv t5, t4              # t5 = i = 2
     sqrt_loop:
-        mul t6, t5, t5     # t6 = i * i
-        bgt t6, a0, prime  # nếu i*i > n thì là số nguyên tố
+        mul t6, t5, t5     # t6 = 2 * 2 = 4
+        bgt t6, a0, prime  # 4 > 4 ? → sai → tiếp tục
 
-        rem t6, a0, t5     # t6 = n % i
-        beq t6, zero, not_prime  # nếu chia hết thì không phải số nguyên tố
+        rem t6, a0, t5     # t6 = 4 % 2 = 0 (rem : lưu phần dư của phép chia vào thanh ghi t6)
+        beq t6, zero, not_prime  # 0 == 0 ? → nhảy đến not_prime 
 
-        addi t5, t5, 1     # i++
+        addi t5, t5, 1     # i++ (vd a0 = 9 => 4 > 9 sai => 9%2 = 1 sai => addi i + 1 = 3 tiep tuc)
         j sqrt_loop
 
 prime:
