@@ -1,47 +1,61 @@
-.data
-N:        .word 8          # Giá trị đầu vào n = 8
-RESULT:   .word 0          # Kết quả sẽ được lưu ở đây
-
 .text
 .global _start
 _start:
-    # Đọc giá trị N từ bộ nhớ
-    la      t0, N          # t0 = &N
-    lw      a1, 0(t0)      # a1 = n
+    li sp, 0x03FFFFFC             # Khởi tạo Stack Pointer ở đỉnh vùng nhớ
 
-    # Khởi tạo f0 = 0, f1 = 1
-    li      t1, 0          # t1 = f0
-    li      t2, 1          # t2 = f1
+    la t0, fib_n                  # t0 ← địa chỉ biến đầu vào n
+    lw a0, 0(t0)                  # a0 ← giá trị n
 
-    # Kiểm tra các trường hợp cơ sở
-    beq     a1, zero, save_f0       # nếu n == 0
-    li      t3, 1
-    beq     a1, t3, save_f1         # nếu n == 1
+    jal ra, fib                  # Gọi hàm fib(n)
 
-    # Vòng lặp chính: for i = 2 to n
-    li      t3, 2          # t3 = i = 2
-loop:
-    add     t4, t1, t2     # t4 = f(i) = f(i-1) + f(i-2)
-    mv      t1, t2         # f(i-2) = f(i-1)
-    mv      t2, t4         # f(i-1) = f(i)
-    addi    t3, t3, 1      # i++
-    ble     t3, a1, loop   # while i <= n
+    la t1, result            # t1 ← địa chỉ kết quả
+    sw a0, 0(t1)                 # Ghi kết quả vào Fib_Result
 
-    # Lưu kết quả vào RESULT
-	#t2 ra ket qua HEX doi sang DEC la duoc
-    la      t5, RESULT     # t5 = &RESULT
-    sw      t2, 0(t5)      # RESULT = f(n)
-    j       done
+STOP:   j STOP                   # Dừng chương trình (vòng lặp vô hạn)
 
-save_f0:
-    la      t5, RESULT
-    sw      t1, 0(t5)      # f(0) = 0
-    j       done
+# ========== Hàm fib(a0) ==========
+fib:
+    addi sp, sp, -16             # Cấp phát stack cho ra, s0, s1, s2
+    sw ra, 12(sp)                # Lưu return address
+    sw s0, 8(sp)                 # Lưu s0
+    sw s1, 4(sp)                 # Lưu s1
+    sw s2, 0(sp)                 # Lưu s2 (chưa dùng nhưng dự phòng)
 
-save_f1:
-    la      t5, RESULT
-    sw      t2, 0(t5)      # f(1) = 1
-    j       done
+    # Trường hợp cơ sở
+    li t0, 0
+    beq a0, t0, base_case_0      # nếu n == 0, trả về 0
+    li t0, 1
+    beq a0, t0, base_case_1      # nếu n == 1, trả về 1
 
-done:
-    j       done           # vòng lặp vô hạn
+    mv s0, a0                    # s0 ← n
+
+    # Gọi fib(n-1)
+    addi a0, s0, -1
+    jal ra, fib
+    mv s1, a0                    # s1 ← fib(n-1)
+
+    # Gọi fib(n-2)
+    addi a0, s0, -2
+    jal ra, fib
+    add a0, a0, s1               # a0 ← fib(n-1) + fib(n-2)
+
+    j fib_exit
+
+base_case_0:
+    li a0, 0
+    j fib_exit
+
+base_case_1:
+    li a0, 1
+
+fib_exit:
+    lw s2, 0(sp)
+    lw s1, 4(sp)
+    lw s0, 8(sp)
+    lw ra, 12(sp)
+    addi sp, sp, 16              # Khôi phục stack
+    ret
+
+.data
+fib_n:       .word 8             # Giá trị đầu vào n = 8
+result:  .word 0             # Lưu kết quả Fibonacci(n)
