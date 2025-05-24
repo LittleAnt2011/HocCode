@@ -1,62 +1,74 @@
-.data
-    RED_LEDs:    .word 0xFF200000
-    SWITCHES:    .word 0xFF200040
+############################################################
+#  Kiểm tra số chính phương & điều khiển LED đỏ (8-bit)
+#  Thuật toán tuyến tính – KHÔNG MUL/DIV/REM              #
+############################################################
 
-.text
-.globl _start
+.equ LED_ADDR,      0xFF200000   # LED Red
+.equ SWITCH_ADDR,   0xFF200040   # SW[7:0]
 
+    .text
+    .globl _start
+
+# ======================== MAIN LOOP ========================
 _start:
-    # Load address of SWITCHES and RED_LEDs
-    la t0, SWITCHES
-    lw t1, 0(t0)       # Load address of switches
-    lw t1, 0(t1)       # Load value from switches into t1 (N)
+main_loop:
+    # --- Đọc 1 byte từ SW[7:0] ---
+    li   t0, SWITCH_ADDR       # địa chỉ switch
+    lbu  t1, 0(t0)             # N (0-255)
 
-    mv a0, t1          # Move N to a0 to pass as argument
-    jal ra, isPerfectSquare
+    mv   a0, t1
+    jal  ra, isPerfectSquare   # a0 = 1 / 0
 
-    # a0 = 1 nếu là số chính phương
-    la t2, RED_LEDs
-    lw t3, 0(t2)       # Load LED address
+    # --- Điều khiển LED ---
+    li   t3, LED_ADDR
+    beq  a0, x0, led_off
 
-    beq a0, x0, not_square
-    li t4, 0xFF        # RED LEDs ON (all 8 bits)
-    sw t4, 0(t3)
-    j end
+led_on:
+    li   t4, 0xFF              # Bật 8 LED
+    sw   t4, 0(t3)
+    j    delay_loop
 
-not_square:
-    li t4, 0x00        # RED LEDs OFF
-    sw t4, 0(t3)
+led_off:
+    li   t4, 0x00              # Tắt LED
+    sw   t4, 0(t3)
 
-end:
-    j end              # Vòng lặp vô tận
+# ----- delay nhỏ để tránh nhấp nháy -----
+delay_loop:
+    li   t5, 100000            # tuỳ board, tăng/giảm nếu cần
+delay_dec:
+    addi t5, t5, -1
+    bnez t5, delay_dec
 
-# ----------------------------------------------------------
-# Hàm kiểm tra số chính phương: isPerfectSquare(a0 = N)
-# Trả về a0 = 1 nếu là số chính phương, a0 = 0 nếu không
-# Không dùng mul, div, rem
-# ----------------------------------------------------------
+    j    main_loop             # lặp & đọc lại SW
+# ===================== END MAIN LOOP ======================
+
+
+############################################################
+#  isPerfectSquare(a0 = N)  →  a0 = 1 (true) / 0 (false)
+############################################################
 isPerfectSquare:
-    li t1, 0           # t1 = i = 0
+    li   t6, 2
+    blt  a0, t6, pfs_true      # 0 hoặc 1
 
-.loop:
-    li t2, 0           # t2 = i*i (reset)
-    li t3, 0           # t3 = đếm số lần cộng
+    li   t1, 1                 # i = 1
+pfs_loop:
+    li   t2, 0                 # t2 = i*i
+    mv   t3, t1                # bộ đếm = i
+pfs_mul:
+    add  t2, t2, t1
+    addi t3, t3, -1
+    bnez t3, pfs_mul
 
-.square_loop:
-    add t2, t2, t1     # t2 += i
-    addi t3, t3, 1
-    bne t3, t1, .square_loop
-
-    beq t2, a0, is_square     # Nếu i*i == N → là số chính phương
-    bgt t2, a0, not_square_return  # Nếu i*i > N → không phải
+    beq  t2, a0, pfs_true
+    bgt  t2, a0, pfs_false
 
     addi t1, t1, 1
-    j .loop
+    j    pfs_loop
 
-is_square:
-    li a0, 1           # Trả về 1 nếu đúng
-    jr ra
+pfs_true:
+    li   a0, 1
+    ret
 
-not_square_return:
-    li a0, 0           # Trả về 0 nếu không
-    jr ra
+pfs_false:
+    li   a0, 0
+    ret
