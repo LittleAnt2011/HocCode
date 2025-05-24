@@ -1,14 +1,14 @@
 .text
 .global _start
 _start:
-    li sp, 0x03FFFFFC             # Khởi tạo Stack Pointer ở đỉnh vùng nhớ
+    li sp, 0x03FFFFFC            # Khởi tạo Stack Pointer ở đỉnh vùng nhớ
 
-    la t0, fib_n                  # t0 ← địa chỉ biến đầu vào n
-    lw a0, 0(t0)                  # a0 ← giá trị n
+    la t0, fib_n                 # t0 ← địa chỉ biến đầu vào n
+    lw a0, 0(t0)                 # a0 ← giá trị n
 
     jal ra, fib                  # Gọi hàm fib(n)
 
-    la t1, result            # t1 ← địa chỉ kết quả
+    la t1, result                # t1 ← địa chỉ kết quả
     sw a0, 0(t1)                 # Ghi kết quả vào Fib_Result
 
 STOP:   j STOP                   # Dừng chương trình (vòng lặp vô hạn)
@@ -57,5 +57,5 @@ fib_exit:
     ret
 
 .data
-fib_n:       .word 8             # Giá trị đầu vào n = 8
+fib_n:   .word 8             # Giá trị đầu vào n = 8
 result:  .word 0             # Lưu kết quả Fibonacci(n)
