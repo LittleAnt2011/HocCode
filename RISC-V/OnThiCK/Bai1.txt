@@ -1,0 +1,30 @@
+.text
+.equ LEDS,     0xff200000
+.equ SWITCHES, 0xff200040
+
+.global _start
+_start:
+    la t0, LEDS         # t0 = địa chỉ LED
+    la t1, SWITCHES     # t1 = địa chỉ Switches
+
+loop:
+    lw t2, 0(t1)        # t2 = giá trị switches
+    srli t2, t2, 2      # dịch phải 2 bit để lấy SW[5:2]
+    andi t2, t2, 0xF    # giữ lại 4-bit => t2 = N
+
+    addi t3, x0, 0      # t3 = i = 0
+    addi t4, x0, 1      # t4 = odd = 1
+    addi t5, x0, 0      # t5 = sum = 0
+
+sum_loop:
+    bgt t3, t2, done    # nếu i > N thì thoát vòng lặp
+    add t5, t5, t4      # sum += odd
+    addi t4, t4, 2      # odd += 2
+    addi t3, t3, 1      # i += 1
+    j sum_loop
+
+done:
+    sw t5, 0(t0)        # ghi kết quả ra LED
+    j loop              # lặp lại để cập nhật khi SW thay đổi
+
+.end
