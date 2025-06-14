@@ -10,13 +10,13 @@ _start:
     li sp, 0x03FFFFFC                    # Khởi tạo stack
 
 main_loop:
-    li t0, SWITCHS
+    la t0, SWITCHS
     lw t1, 0(t0)                         # Đọc switch
     andi a0, t1, 0xF                     # Mask 4-bit N từ SW[3:0]
     
     jal ra, tinh_giai_thua               # Gọi hàm tính N!
     
-    li t0, LEDS
+    la t0, LEDS
     sw a0, 0(t0)                         # Xuất kết quả ra LED
     
     j main_loop                          # Lặp lại liên tục

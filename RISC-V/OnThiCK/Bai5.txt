@@ -2,72 +2,68 @@
 # multiplicand x12 = SW[3:0], multiplier x13 = SW[7:4], product x11
 # x11 = a1, x12 = a2, x13 = a3 (theo RISC-V calling convention)
 
-.equ LEDS, 0xFF200000
-.equ SWITCHS, 0xFF200040
+.equ LEDS, 0xff200000
+.equ SWITCHES, 0xff200040
 
-.text
-.globl _start
+.text 
+.global _start
 
-_start:
-    li sp, 0x03FFFFFC                    # Khởi tạo stack
-
+_start: 
+	li sp, 0x03FFFFFC
+	
 main_loop:
-    li t0, SWITCHS
-    lw t1, 0(t0)                         # Đọc switch
-    andi a2, t1, 0xF                     # x12 = SW[3:0] (multiplicand)
-    srli t1, t1, 4
-    andi a3, t1, 0xF                     # x13 = SW[7:4] (multiplier)
-    
-    # Input: a2 = multiplicand (x12), a3 = multiplier (x13)
-    # Output: a1 = product (x11)
-    jal ra, nhan_theo_luu_do             # Gọi hàm nhân theo lưu đồ
-    
-    li t0, LEDS
-    sw a1, 0(t0)                         # Xuất product x11 ra LED
-    
-    j main_loop                          # Lặp lại liên tục
-
-# Hàm nhân theo lưu đồ (Second Multiply Algorithm từ hình)
-# Input: a2 = multiplicand (x12), a3 = multiplier (x13)
-# Output: a1 = product (x11)
+	la t0, SWITCHES
+	lw t1, 0(t0)
+	andi a2, t1, 0xF
+	srli t1, t1, 4
+	andi a3, t1, 0xF
+	
+	jal ra, nhan_theo_luu_do
+	
+	la t0, LEDS
+	sw a1, 0(t0)
+	
+	j main_loop
+	
 nhan_theo_luu_do:
-    addi sp, sp, -16                     # Prologue
-    sw s0, 12(sp)                        # s0 = multiplicand
-    sw s1, 8(sp)                         # s1 = multiplier
-    sw s2, 4(sp)                         # s2 = product
-    sw ra, 0(sp)
-    
-    mv s0, a2                            # s0 = multiplicand (x12)
-    mv s1, a3                            # s1 = multiplier (x13)
-    li s2, 0                             # s2 = product = 0
-    li t0, 32                            # counter = 32 repetitions
-    
+	addi sp, sp, -16
+	sw s0, 0(sp)
+	sw s1, 4(sp)
+	sw s2, 8(sp)
+	sw ra, 12(sp)
+	
+	mv s0, a2 # multiplicand
+	mv s1, a3 # multiplier
+	li s2, 0  # product
+	li t0, 32
+	
 nhan_luu_do_loop:
-    andi t1, s1, 1                       # Test bit LSB của multiplier
-    bne t1, zero, nhan_luu_do_add        # Nếu bit = 1 thì add
-    j nhan_luu_do_shift                  # Nếu bit = 0 thì skip add
-    
+	andi t1, s1, 1 # ktra bit cuối của multiplier
+	bne t1, zero, nhan_luu_do_add # bit = 1 thì nhảy đến add, bit = 0 thì ko cộng 
+	j nhan_luu_do_shift
+	
 nhan_luu_do_add:
-    add s2, s2, s0                       # 1a: product = product + multiplicand
-    
-nhan_luu_do_shift:
-    slli s0, s0, 1                       # 2: Shift left multiplicand 1 bit
-    srli s1, s1, 1                       # 3: Shift right multiplier 1 bit
-    
-    addi t0, t0, -1                      # Giảm counter
-    bne t0, zero, nhan_luu_do_loop       # Lặp 32 lần
-    
-nhan_luu_do_end:
-    mv a1, s2                            # Gán product vào x11 (a1)
-    
-    lw ra, 0(sp)                         # Epilogue
-    lw s2, 4(sp)
-    lw s1, 8(sp)
-    lw s0, 12(sp)
-    addi sp, sp, 16
-    
-    ret
+	add s2, s2, s0 # product = product + multiplicand
 
+nhan_luu_do_shift: 
+	srli s1, s1, 1
+	slli s0, s0, 1
+	
+	addi t0, t0, -1 # kiểm tra hết 32 bit không bỏ sót
+	bne t0, zero, nhan_luu_do_loop
+	
+nhan_luu_do_end:
+	mv a1, s2
+	
+	lw s0, 0(sp)
+	lw s1, 4(sp)
+	lw s2, 8(sp)
+	lw s3, 12(sp)
+	addi sp, sp, 16
+	
+	ret
+
+	
 # TEST CASES:
 # SW[7:4]=0010, SW[3:0]=0011 (x13=2, x12=3): LED = 0x006   2×3=6
 # SW[7:4]=0100, SW[3:0]=0101 (x13=4, x12=5): LED = 0x014   4×5=20
