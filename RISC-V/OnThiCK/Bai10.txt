@@ -45,6 +45,7 @@ kiem_tra:
 	
 khoang_tren: 
 	blt s0, t1, dieu_kien_2_dung
+	li s2, 0
 	j check_result
 	
 dieu_kien_2_dung:
