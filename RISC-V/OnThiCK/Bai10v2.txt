@@ -1,0 +1,103 @@
+.equ LEDS, 0xff200000
+.equ SWITCHES, 0xff200040
+
+.text
+.global _start
+_start:
+	li sp, 0x03FFFFFC
+	
+main_loop:
+	la t0, SWITCHES
+	lw t1, 0(t0)
+	srli t1, t1, 2
+	andi a0, t1, 0xFF
+	
+	jal ra, kiem_tra
+	
+	la t0, LEDS
+	sw a0, 0(t0)
+	
+	j main_loop
+	
+kiem_tra:
+	addi sp, sp, -16
+	sw s0, 0(sp)
+	sw s1, 4(sp)
+	sw s2, 8(sp)
+	sw ra, 12(sp)
+	
+	mv s0, a0 # N
+	li s1, 0 # điều kiện 1 chia hết
+	li s2, 0 # điều kiện 2 trong khoảng
+	
+	# Kiểm tra điều kiện 1 chia hết
+	mv a0, s0
+	jal ra, chia_het
+	mv s1, a0
+	
+	# Kiểm tra điều kiện 2 trong khoảng 
+	li t0, 0x18
+	li t1, 0x40
+	bgt s0, t0, khoang_tren
+	j check_result
+	
+khoang_tren:
+	blt s0, t1, dieu_kien_2_dung
+	j check_result
+	
+dieu_kien_2_dung:	
+	li s2, 1
+	
+check_result:
+	add t0, s1, s2
+	bne t0, zero, check_both
+	li a0, 0
+	j kiem_tra_end
+	
+check_both:
+	li t1, 2
+	bne t0, t1, thoa_1_dieu_kien
+	li a0, 0xF0
+	j kiem_tra_end
+
+thoa_1_dieu_kien:
+	li a0, 0xF
+	
+kiem_tra_end:
+	lw s0, 0(sp)
+	lw s1, 4(sp)
+	lw s2, 8(sp)
+	lw ra, 12(sp)
+	addi sp, sp, 16
+	
+	ret
+	
+chia_het: 
+	addi sp, sp, -8
+	sw s0, 0(sp)
+	sw ra, 4(sp)
+	
+	mv s0, a0
+	
+	li t0, 0x11
+	
+chia_het_loop:
+	blt s0, t0, chia_het_check
+	sub s0, s0, t0
+	j chia_het_loop
+	
+chia_het_check:
+	beq s0, zero, dieu_kien_1_dung # s0 = 0 => trả kết quả a0 = 1
+	li a0, 0 # s0 khác 0 => trả kết quả a0 = 0
+	j chia_het_end
+	
+dieu_kien_1_dung:
+	li a0, 1
+	
+chia_het_end:
+	lw s0, 0(sp)
+	lw ra, 4(sp)
+	addi sp, sp, 8
+	
+	ret
+	
