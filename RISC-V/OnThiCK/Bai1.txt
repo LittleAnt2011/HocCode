@@ -33,9 +33,7 @@ tinh_tong_le:
     mv s0, a0                            # s0 = N
     li s1, 0                             # s1 = tổng
     li s2, 1                             # s2 = số lẻ hiện tại
-    
-    blt s0, zero, tinh_tong_le_end
-    
+        
 tinh_tong_le_loop:
     add s1, s1, s2                       # sum += current_odd
     addi s2, s2, 2                       # next odd number
