@@ -1,0 +1,28 @@
+int sensorPin = A0; 
+void setup() { 
+
+Serial.begin(9600); 
+analogReference(DEFAULT); 
+
+} 
+void loop() { 
+
+int sensorValue = analogRead(sensorPin);
+float vol = sensorValue / 1024.0; 
+vol = vol * 4.84; // Đo lại giá trị Vref để có kết quả đúng
+float Rq = vol * 10000 / (4.84 - vol); 
+float Eb = 10 * pow(10, log10(18000 / Rq) / 0.9); // Ra = 10, y = 0.9, Ea = 18000
+Serial.print("Eb = ");
+Serial.print(Eb, 3);     // In Eb với 0 chữ số sau dấu thập phân
+Serial.print(" lx   ");
+
+Serial.print("R = ");
+Serial.print(Rq, 3);     // In Rq với 0 chữ số sau dấu thập phân
+Serial.print("   ");
+
+Serial.print("Vol = ");
+Serial.print(vol, 3);    // In vol với 3 chữ số sau dấu thập phân
+Serial.println(" V");    // In " V" và xuống dòng
+delay(1000); 
+
+}
