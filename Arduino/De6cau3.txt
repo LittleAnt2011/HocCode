@@ -1,0 +1,60 @@
+#define VREF 5.16
+const int Pin0 = A0;
+const int Pin1 = A1;
+
+void setup(){
+  Serial.begin(115200);
+  analogReference(DEFAULT);
+}
+
+void loop(){
+  int adc = analogRead(Pin0);
+  float vol = VREF * (adc/1024.0);
+  float Rt = vol * 10000.0 / (5.16-vol);
+  float t = 3435.0 * 298 / (log(Rt/10000)*298 + 3435 ) - 273;
+
+  float sum = 0;
+  for (int i = 0; i<=2024; i++){
+    int adc1 = analogRead(Pin1);
+    float vout = VREF * (adc1/1024.0);
+    sum += vout;
+  }
+
+  float Vout = sum / 2025;
+  float s = 0;
+  if ( t < 25)
+    s = 0.05*t + 183.75;
+    else if ( t <= 85 )
+      s = 0.01*t+184.75;
+    else
+    s = -0.02*t + 187.75;
+  
+
+  float Vq = 2.575;
+  float Ip = (Vq - Vout) * 1000 / s; // triệt tiêu mV
+  
+  
+ 
+  Serial.print("Do nhay = ");
+  Serial.print(s, 3);
+  Serial.print(" mV/A    ");
+
+  
+  Serial.print("Vo = ");
+  Serial.print(Vout, 3);
+  Serial.print(" V    ");
+
+  
+  Serial.print("Ip = ");
+  Serial.print(Ip, 3);
+  Serial.print(" A    ");
+
+  Serial.print("T = ");
+  Serial.print(t, 3);
+  Serial.println(" *C    ");
+}
+
+
+
+
+

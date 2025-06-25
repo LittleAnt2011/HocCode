@@ -1,0 +1,39 @@
+Chương trình tính giá trị RMS dòng điện sơ cấp, thứ cấp và công suất tải AC:
+
+- Mã nguồn chương trình :
+#define VREF 5.16
+const int analogInPin0 = A0;
+const int analogInPin1 = A1;
+
+void setup (){
+  Serial.begin(115200);
+  analogReference(DEFAULT);
+}
+
+void loop ()
+{
+  float sum = 0;
+  for (int i = 0 ; i<2005; i++){
+  int Xn = analogRead(analogInPin0) - analogRead(analogInPin1);
+  float vol = VREF * (Xn / 1024.0);
+  float is = vol / 1000;
+  float ip = is*1000;
+  sum+=ip*ip;
+  }
+  float Irms =sqrt(sum/2005);
+  float P = Irms*220.0;
+  
+  Serial.print("Irms = ");
+  Serial.print(Irms,6);
+  Serial.print(" A   ");
+  
+  Serial.print("P = ");
+  Serial.print(P,6);
+  Serial.println(" W    ");  
+}
+
+
+
+
+
+

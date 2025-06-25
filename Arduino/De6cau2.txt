@@ -1,0 +1,28 @@
+#define VREF 5.16
+const int Pin0 = A0;
+const int Pin1 = A1;
+
+void setup(){
+  Serial.begin(115200);
+  analogReference(DEFAULT);
+}
+
+void loop(){
+  int adc = analogRead(Pin0);
+  float vol = VREF * (adc/1024.0);
+  float Rt = vol * 10000.0 / (5.16-vol);
+  float T = 3435.0 * 298 / (log(Rt/10000)*298 + 3435 ) - 273;
+
+  Serial.print("Rt = ");
+  Serial.print(Rt, 3);
+  Serial.print(" R    ");
+
+  Serial.print("T = ");
+  Serial.print(T, 3);
+  Serial.println(" *C    ");
+}
+
+
+
+
+

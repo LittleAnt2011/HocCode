@@ -1,0 +1,27 @@
+Dạng sóng dòng điện cuộn sơ cấp:
+Mã nguồn chương trình vẽ dòng điện cuộn sơ cấp:
+
+#define VREF 5.16
+const int analogInPin0 = A0;
+const int analogInPin1 = A1;
+
+void setup (){
+  Serial.begin(115200);
+  analogReference(DEFAULT);
+}
+
+void loop ()
+{
+  int Xn = analogRead(analogInPin0) - analogRead(analogInPin1);
+  float vol = VREF * (Xn / 1024.0);
+  float is = vol / 1000;
+  float ip = is*1000;
+  
+  Serial.println(ip,6);  
+}
+
+
+
+
+
+

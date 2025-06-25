@@ -1,4 +1,4 @@
-int Pin = A7;
+int Pin = A0;
 
 void setup(){
   Serial.begin(9600);
@@ -12,7 +12,7 @@ void loop(){
   vol = vol * 4.8;
   float Ipce = vol / 10000.0;
   Ipce = Ipce * 10000000.0;
-  float E = pow(10, 1.06 * log10(Ipce) + 6.114); // Ea = a * log(Ia) + b
+  float E = pow(10, 0.908 * log10(Ipce) + 0.3114); // Ea = a * log(Ia) + b
 
   Serial.print("E = ");
   Serial.print(E, 3);
