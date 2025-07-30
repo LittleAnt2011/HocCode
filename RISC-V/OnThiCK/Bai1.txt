@@ -50,3 +50,6 @@ tinh_tong_le_end:
     addi sp, sp, 16
     
     ret                                  # Trả về caller
+
+
+#hahahaha
